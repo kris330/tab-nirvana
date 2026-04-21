@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabNirvana</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2.5"/>
+          <path d="M8 21h8"/><path d="M12 17v4"/>
+        </svg>
+        <span>TabNirvana</span>
+      </div>
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input id="search-input" class="search-input" type="search"
+               placeholder="Search tabs…" autocomplete="off" spellcheck="false">
+        <span id="search-count" class="search-count" hidden></span>
+        <button id="search-clear" class="search-clear" hidden aria-label="Clear search">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="header-stats" class="header-stats">Loading…</div>
+      <label class="preview-toggle" title="Enable hover preview (fetches page content on hover)">
+        <input type="checkbox" id="hover-toggle">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Preview
+        </span>
+      </label>
+      <button id="close-all-btn" class="btn-danger" title="Close all tabs in this window (except this summary tab)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+        Close All
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main Content ── -->
+  <main id="main">
+
+    <!-- Loading State -->
+    <div id="loading" class="state-loading">
+      <div class="spinner"></div>
+      <p>Gathering your tabs…</p>
+    </div>
+
+    <!-- Masonry Grid -->
+    <div id="masonry" class="masonry" hidden></div>
+
+    <!-- Empty / Nirvana State -->
+    <div id="empty-state" class="state-empty" hidden>
+      <div class="empty-icon">☯</div>
+      <h2>Nirvana Achieved</h2>
+      <p>All tabs have been released. Your mind is clear.</p>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
