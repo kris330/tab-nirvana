@@ -882,6 +882,10 @@ function bindKeyboardNav() {
         if (target) setKbdFocus(target);
         break;
       }
+      case 'Escape': {
+        window.parent.postMessage({ type: 'TN_CLOSE_MODAL' }, '*');
+        break;
+      }
       case 'Enter': {
         if (!current) break;
         e.preventDefault();
