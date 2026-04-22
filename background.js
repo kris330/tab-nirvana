@@ -96,8 +96,15 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 
 // Toolbar icon click / keyboard shortcut → open modal on current page
 chrome.action.onClicked.addListener((tab) => {
+  const url = tab.url || '';
+  const canInject = url.startsWith('http://') || url.startsWith('https://');
+  if (!canInject) {
+    // New tab / chrome:// pages can't host a content script — navigate in place
+    chrome.tabs.update(tab.id, { url: chrome.runtime.getURL('summary/index.html') });
+    return;
+  }
   chrome.tabs.sendMessage(tab.id, { type: 'OPEN_MODAL' }).catch(() => {
-    // Fallback for pages where the content script can't run (e.g. chrome:// URLs)
+    // Fallback: content script not yet injected (e.g. page still loading)
     chrome.tabs.create({
       url: chrome.runtime.getURL('summary/index.html'),
       active: true,

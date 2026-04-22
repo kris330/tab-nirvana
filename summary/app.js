@@ -272,6 +272,9 @@ async function init() {
   bindSearch();
   bindHoverToggle();
   bindRealtimeSync();
+  bindKeyboardNav();
+  // Auto-focus search input when the panel opens
+  setTimeout(() => document.getElementById('search-input')?.focus(), 80);
 }
 
 // ═══════════════════════════════════════════════
@@ -766,6 +769,153 @@ function applyCurrentSearch() {
   } else {
     countEl.hidden = true;
   }
+}
+
+// ═══════════════════════════════════════════════
+// 键盘导航
+// ═══════════════════════════════════════════════
+function bindKeyboardNav() {
+  function visibleItems() {
+    return [...document.querySelectorAll(
+      '#masonry .tab-item:not(.search-hidden):not(.removing)'
+    )];
+  }
+
+  function getKbdItem() {
+    return document.querySelector('.tab-item.kbd-focus');
+  }
+
+  function setKbdFocus(el) {
+    getKbdItem()?.classList.remove('kbd-focus');
+    if (!el) return;
+    el.classList.add('kbd-focus');
+    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  /**
+   * Find the visually nearest tab item to the left or right of `current`.
+   * Uses getBoundingClientRect so it works with any column layout.
+   * Scoring: vertical proximity is the primary factor; horizontal distance
+   * is a small tiebreaker so items in the same visual row win.
+   */
+  function nearestInDirection(current, dir) {
+    const items = visibleItems();
+    const cr = current.getBoundingClientRect();
+    const cCX = cr.left + cr.width  / 2;
+    const cCY = cr.top  + cr.height / 2;
+
+    let best = null;
+    let bestScore = Infinity;
+
+    for (const item of items) {
+      if (item === current) continue;
+      const r = item.getBoundingClientRect();
+      const iCX = r.left + r.width  / 2;
+      const iCY = r.top  + r.height / 2;
+
+      if (dir === 'right' && iCX <= cCX) continue;
+      if (dir === 'left'  && iCX >= cCX) continue;
+
+      const dy = Math.abs(iCY - cCY);
+      const dx = Math.abs(iCX - cCX);
+      const score = dy + dx * 0.1; // vertical proximity dominates
+
+      if (score < bestScore) { bestScore = score; best = item; }
+    }
+    return best;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const inSearch = document.activeElement?.id === 'search-input';
+
+    // '/' → jump to search box from anywhere in the grid
+    if (e.key === '/' && !inSearch) {
+      e.preventDefault();
+      setKbdFocus(null);
+      document.getElementById('search-input').focus();
+      return;
+    }
+
+    // While search box is focused, only ↓ moves into the grid
+    if (inSearch) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        document.activeElement.blur();
+        const items = visibleItems();
+        if (items.length) setKbdFocus(items[0]);
+      }
+      return;
+    }
+
+    const items   = visibleItems();
+    const current = getKbdItem();
+    const idx     = current ? items.indexOf(current) : -1;
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        if (idx === -1 && items.length) { setKbdFocus(items[0]); break; }
+        if (idx < items.length - 1) setKbdFocus(items[idx + 1]);
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        if (idx <= 0) {
+          setKbdFocus(null);
+          document.getElementById('search-input').focus();
+        } else {
+          setKbdFocus(items[idx - 1]);
+        }
+        break;
+      }
+      case 'ArrowRight': {
+        e.preventDefault();
+        if (!current) { if (items.length) setKbdFocus(items[0]); break; }
+        const target = nearestInDirection(current, 'right');
+        if (target) setKbdFocus(target);
+        break;
+      }
+      case 'ArrowLeft': {
+        e.preventDefault();
+        if (!current) break;
+        const target = nearestInDirection(current, 'left');
+        if (target) setKbdFocus(target);
+        break;
+      }
+      case 'Enter': {
+        if (!current) break;
+        e.preventDefault();
+        current.querySelector('.tab-main')?.click();
+        break;
+      }
+      case 'Delete':
+      case 'Backspace': {
+        if (!current) break;
+        e.preventDefault();
+        if (e.shiftKey) {
+          // Shift+Delete → close all tabs in the current domain card
+          current.closest('.domain-card')?.querySelector('.close-group-btn')?.click();
+        } else {
+          // Delete → close single tab, then move focus to adjacent item
+          const nextIdx = idx < items.length - 1 ? idx + 1 : idx - 1;
+          current.querySelector('.close-tab-btn')?.click();
+          if (nextIdx >= 0) {
+            setTimeout(() => {
+              const newItems = visibleItems();
+              const next = newItems[Math.min(nextIdx, newItems.length - 1)];
+              if (next) setKbdFocus(next);
+            }, 260);
+          }
+        }
+        break;
+      }
+    }
+  });
+
+  // Clear keyboard highlight when the mouse moves (user switched back to mouse)
+  document.getElementById('masonry')?.addEventListener('mousemove', () => {
+    getKbdItem()?.classList.remove('kbd-focus');
+  }, { passive: true });
 }
 
 // ═══════════════════════════════════════════════

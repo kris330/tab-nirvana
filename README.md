@@ -12,6 +12,7 @@
 - **Hover preview** *(opt-in)* — Enable the "Preview" toggle in the header to fetch and render a live 320×200 miniature of any tab's actual webpage content on hover.
 - **Real-time sync** — The panel reflects tab changes (open, close, navigate) across all windows instantly, no manual refresh needed.
 - **Quick search** — Filter all tabs by title, URL, domain, or summary text. Press `Esc` to clear, press `Esc` again (on empty input) to close the panel.
+- **Full keyboard navigation** — Navigate the entire panel without a mouse: `↑`/`↓` move between tab rows, `←`/`→` jump between masonry columns, `Enter` activates a tab, `Delete`/`Backspace` closes it, `Shift+Delete` closes the entire domain group.
 - **Duplicate detection** — Tabs sharing the same URL are flagged with an amber `×N` badge.
 - **Batch close** — Close a single tab, an entire domain group, or all tabs at once.
 - **Draggable button** — Drag the floating button anywhere on the page; it snaps back to the right edge when released nearby. Position is persisted across sessions.
@@ -20,13 +21,28 @@
 
 ## Keyboard Shortcuts
 
+### Global
+
 | Action | Shortcut |
 |--------|----------|
-| Open / close TabNirvana | `Alt+V` |
+| Open TabNirvana | `Alt+V` |
 | Close panel | `Esc` |
-| Clear search | `Esc` (when search input has text) |
 
-> Shortcuts can be customised at `chrome://extensions/shortcuts`.
+> The default shortcut can be changed at `chrome://extensions/shortcuts`.
+
+### Inside the panel
+
+| Action | Shortcut |
+|--------|----------|
+| Focus search box | Auto-focused on open, or press `/` |
+| Move into the tab grid | `↓` (from search box) |
+| Navigate between tab rows | `↑` / `↓` |
+| Navigate between columns (left / right) | `←` / `→` |
+| Activate (switch to) selected tab | `Enter` |
+| Close selected tab | `Delete` or `Backspace` |
+| Close all tabs in the current domain group | `Shift+Delete` or `Shift+Backspace` |
+| Clear search text | `Esc` (when search has text) |
+| Close panel from search box | `Esc` (when search is empty) |
 
 ---
 
