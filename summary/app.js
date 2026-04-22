@@ -894,17 +894,40 @@ function bindKeyboardNav() {
         e.preventDefault();
         if (e.shiftKey) {
           // Shift+Delete → close all tabs in the current domain card
-          current.closest('.domain-card')?.querySelector('.close-group-btn')?.click();
-        } else {
-          // Delete → close single tab, then move focus to adjacent item
-          const nextIdx = idx < items.length - 1 ? idx + 1 : idx - 1;
-          current.querySelector('.close-tab-btn')?.click();
-          if (nextIdx >= 0) {
+          const card = current.closest('.domain-card');
+          if (!card) break;
+          // Find next visible card (skip search-hidden ones)
+          const targetCard = (() => {
+            let c = card.nextElementSibling;
+            while (c) { if (!c.classList.contains('search-hidden')) return c; c = c.nextElementSibling; }
+            c = card.previousElementSibling;
+            while (c) { if (!c.classList.contains('search-hidden')) return c; c = c.previousElementSibling; }
+            return null;
+          })();
+          card.querySelector('.close-group-btn')?.click();
+          if (targetCard) {
             setTimeout(() => {
-              const newItems = visibleItems();
-              const next = newItems[Math.min(nextIdx, newItems.length - 1)];
-              if (next) setKbdFocus(next);
-            }, 260);
+              const nextItem = targetCard.querySelector(
+                '.tab-item:not(.search-hidden):not(.removing)'
+              );
+              if (nextItem) setKbdFocus(nextItem);
+            }, 320); // after animateCardOut (280ms)
+          }
+        } else {
+          // Delete → close single tab
+          // Save target element reference before removal — index shifts after delete
+          const targetItem = items[idx + 1] || items[idx - 1] || null;
+          current.querySelector('.close-tab-btn')?.click();
+          if (targetItem) {
+            setTimeout(() => {
+              if (targetItem.isConnected && !targetItem.classList.contains('search-hidden')) {
+                setKbdFocus(targetItem);
+              } else {
+                const remaining = visibleItems();
+                const fallback  = remaining[Math.min(idx, remaining.length - 1)];
+                if (fallback) setKbdFocus(fallback);
+              }
+            }, 260); // after animateRowOut (220ms)
           }
         }
         break;
