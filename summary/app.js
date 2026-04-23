@@ -729,26 +729,19 @@ function applyCurrentSearch() {
   const countEl = document.getElementById('search-count');
   let matchCount = 0;
 
-  for (const [domain, tabs] of tabGroups) {
-    const card = document.querySelector(`.domain-card[data-domain="${CSS.escape(domain)}"]`);
-    if (!card) continue;
-
+  document.querySelectorAll('#masonry .domain-card').forEach(card => {
+    const domain = (card.dataset.domain ?? '').toLowerCase();
     let cardMatches = 0;
-    const items = card.querySelectorAll('.tab-item');
 
-    items.forEach((li) => {
-      const tabId = parseInt(li.dataset.tabId, 10);
-      const tab   = findTabById(tabId);
-      if (!tab) return;
+    card.querySelectorAll('.tab-item').forEach(li => {
+      const title    = li.querySelector('.tab-title')?.textContent   ?? '';
+      const preview  = li.querySelector('.tab-preview')?.textContent ?? '';
+      const winBadge = li.querySelector('.win-badge')?.textContent   ?? '';
+      const dupBadge = li.querySelector('.dup-badge')?.textContent   ?? '';
+      const url      = li.dataset.url ?? '';
 
-      const haystack = [
-        tab.title ?? '',
-        tab.url   ?? '',
-        domain,
-        tab.metadata?.description ?? '',
-        tab.metadata?.snippet     ?? '',
-        tab.metadata?.heading     ?? '',
-      ].join(' ').toLowerCase();
+      const haystack = [domain, title, preview, winBadge, dupBadge, url]
+        .join(' ').toLowerCase();
 
       const matches = !q || haystack.includes(q);
       li.classList.toggle('search-hidden', !matches);
@@ -759,10 +752,12 @@ function applyCurrentSearch() {
 
     // Update badge to show matching count when searching
     const badge = card.querySelector('.tab-badge');
-    if (badge) badge.textContent = q ? cardMatches : tabs.length;
-  }
+    if (badge) {
+      const total = card.querySelectorAll('.tab-item').length;
+      badge.textContent = q ? cardMatches : total;
+    }
+  });
 
-  // Show match count when query is active
   if (q) {
     countEl.textContent = matchCount.toString();
     countEl.hidden = false;
@@ -789,7 +784,21 @@ function bindKeyboardNav() {
     getKbdItem()?.classList.remove('kbd-focus');
     if (!el) return;
     el.classList.add('kbd-focus');
-    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    scrollToReveal(el);
+  }
+
+  function scrollToReveal(el) {
+    const headerH = document.getElementById('header')?.offsetHeight ?? 56;
+    const footerH = document.querySelector('.kbd-bar')?.offsetHeight ?? 44;
+    const pad = 8;
+    const rect = el.getBoundingClientRect();
+    const topBound    = headerH + pad;
+    const bottomBound = window.innerHeight - footerH - pad;
+    if (rect.top < topBound) {
+      window.scrollBy({ top: rect.top - topBound, behavior: 'smooth' });
+    } else if (rect.bottom > bottomBound) {
+      window.scrollBy({ top: rect.bottom - bottomBound, behavior: 'smooth' });
+    }
   }
 
   /**
