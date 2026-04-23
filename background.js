@@ -99,14 +99,8 @@ chrome.action.onClicked.addListener((tab) => {
   const url = tab.url || '';
   const canInject = url.startsWith('http://') || url.startsWith('https://');
   if (!canInject) {
-    // New tab / chrome:// pages can't host a content script — open as popup window
-    chrome.windows.create({
-      url: chrome.runtime.getURL('summary/index.html'),
-      type: 'popup',
-      width: 1100,
-      height: 720,
-      focused: true,
-    });
+    // New tab / chrome:// pages can't host a content script — navigate in place
+    chrome.tabs.update(tab.id, { url: chrome.runtime.getURL('summary/index.html') });
     return;
   }
   chrome.tabs.sendMessage(tab.id, { type: 'OPEN_MODAL' }).catch(() => {

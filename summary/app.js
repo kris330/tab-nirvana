@@ -4,19 +4,6 @@
 
 'use strict';
 
-/**
- * Close the panel.
- * - In iframe (modal) mode: post message to parent content script.
- * - In standalone mode (popup window or tab): close the window directly.
- */
-function closePanelOrWindow() {
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'TN_CLOSE_MODAL' }, '*');
-  } else {
-    window.close();
-  }
-}
-
 // ═══════════════════════════════════════════════
 // AUDIO — 8-bit 游戏撒金币音效
 // ═══════════════════════════════════════════════
@@ -730,7 +717,7 @@ function bindSearch() {
     if (input.value) {
       clearSearch();          // first ESC: clear search
     } else {
-      closePanelOrWindow(); // second ESC: close modal
+      window.parent.postMessage({ type: 'TN_CLOSE_MODAL' }, '*'); // second ESC: close modal
     }
   });
 
@@ -905,7 +892,7 @@ function bindKeyboardNav() {
         break;
       }
       case 'Escape': {
-        closePanelOrWindow();
+        window.parent.postMessage({ type: 'TN_CLOSE_MODAL' }, '*');
         break;
       }
       case 'Enter': {
