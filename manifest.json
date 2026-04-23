@@ -19,9 +19,6 @@
       "run_at": "document_idle"
     }
   ],
-  "chrome_url_overrides": {
-    "newtab": "newtab/index.html"
-  },
   "web_accessible_resources": [
     {
       "resources": ["summary/index.html", "assets/*"],

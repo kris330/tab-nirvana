@@ -97,29 +97,23 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 // Toolbar icon click / keyboard shortcut → open modal on current page
 chrome.action.onClicked.addListener((tab) => {
   const url = tab.url || '';
-  const canInject  = url.startsWith('http://') || url.startsWith('https://');
-  const isOurNewTab = url.startsWith(chrome.runtime.getURL('newtab/'));
-
-  if (canInject || isOurNewTab) {
-    // http/https pages and our custom new tab page both support OPEN_MODAL messaging
-    chrome.tabs.sendMessage(tab.id, { type: 'OPEN_MODAL' }).catch(() => {
-      if (canInject) {
-        // Fallback for http/https: content script not yet injected
-        chrome.tabs.create({
-          url: chrome.runtime.getURL('summary/index.html'),
-          active: true,
-        });
-      }
+  const canInject = url.startsWith('http://') || url.startsWith('https://');
+  if (!canInject) {
+    // New tab / chrome:// pages can't host a content script — open as popup window
+    chrome.windows.create({
+      url: chrome.runtime.getURL('summary/index.html'),
+      type: 'popup',
+      width: 1100,
+      height: 720,
+      focused: true,
     });
     return;
   }
-
-  // Other chrome:// pages — open as popup window (best effort)
-  chrome.windows.create({
-    url: chrome.runtime.getURL('summary/index.html'),
-    type: 'popup',
-    width: 1100,
-    height: 720,
-    focused: true,
+  chrome.tabs.sendMessage(tab.id, { type: 'OPEN_MODAL' }).catch(() => {
+    // Fallback: content script not yet injected (e.g. page still loading)
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('summary/index.html'),
+      active: true,
+    });
   });
 });
